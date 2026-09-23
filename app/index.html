@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Book</title>
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://trading-book.app/app/">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="onboarding" class="onboarding">
+  <div class="lang-switch" data-lang-switch>
+    <button type="button" data-lang="de">DE</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+  <div class="wordmark wordmark-lg"><span class="wm-accent">Trading</span>Book</div>
+  <p data-i18n="onboarding.tagline">Dein lokales Trading-Journal. Alle Daten bleiben auf deinem Rechner &mdash; als JSON-Datei, die du selbst verwaltest.</p>
+  <button class="btn btn-primary" id="btn-open-file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H8a2 2 0 0 0-1.94 1.51L4 19"/><path d="M3 7v10a2 2 0 0 0 2 2h13.5a2 2 0 0 0 1.94-1.51L22 12H6.5a2 2 0 0 0-1.94 1.51L3 19"/></svg> <span data-i18n="onboarding.openFile">Vorhandene Datei öffnen</span></button>
+  <button class="btn" id="btn-new-file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="M6 6l2.5 2.5"/><path d="M15.5 15.5 18 18"/><path d="M18 6l-2.5 2.5"/><path d="M8.5 15.5 6 18"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-i18n="onboarding.newFile">Neues Trading Book anlegen</span></button>
+  <div class="fine-print" id="fsa-note"></div>
+</div>
+
+<div id="app" style="display:none; width:100%;">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="wordmark"><span class="wm-accent">Trading</span>Book</div>
+      <div class="book-name" id="book-name-label" data-i18n-title="sidebar.currentBookTitle" title="Aktuell geöffnetes Trading Book"></div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></span> <span data-i18n="nav.dashboard">Dashboard</span></button>
+      <button class="nav-item" data-view="trades"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V10"/><rect x="4" y="6" width="4" height="6" rx="1"/><path d="M12 20V4"/><rect x="10" y="12" width="4" height="6" rx="1"/><path d="M18 20V13"/><rect x="16" y="8" width="4" height="7" rx="1"/></svg></span> <span data-i18n="nav.trades">Trades</span></button>
+      <button class="nav-item" data-view="stats"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><rect x="6" y="12" width="3" height="7" rx="1"/><rect x="11" y="7" width="3" height="12" rx="1"/><rect x="16" y="3" width="3" height="16" rx="1"/></svg></span> <span data-i18n="nav.stats">Statistiken</span></button>
+      <button class="nav-item" data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> <span data-i18n="nav.settings">Einstellungen</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="lang-switch" data-lang-switch>
+        <button type="button" data-lang="de">DE</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <div class="file-status" id="file-status"><span class="dot"></span><span id="file-status-text">Bereit</span></div>
+      <button class="btn btn-primary btn-sm" id="btn-save" style="justify-content:center;" data-i18n="sidebar.save">Speichern</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="view-dashboard"></div>
+    <div id="view-trades" style="display:none;"></div>
+    <div id="view-stats" style="display:none;"></div>
+    <div id="view-settings" style="display:none;"></div>
+  </main>
+</div>
+
+<div class="overlay" id="drawer-overlay"></div>
+<aside class="drawer" id="trade-drawer">
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawer-title">Neuer Trade</div>
+    <button class="icon-btn" id="btn-close-drawer"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <form id="trade-form">
+      <input type="hidden" id="f-id">
+
+      <div class="field">
+        <label data-i18n="drawer.direction">Richtung</label>
+        <div class="segmented" id="f-direction-seg">
+          <button type="button" class="active long" data-value="long">Long</button>
+          <button type="button" class="short" data-value="short">Short</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="drawer.status">Status</label>
+        <div class="segmented" id="f-status-seg">
+          <button type="button" class="active closed" data-value="closed" data-i18n="drawer.closedOption">Geschlossen</button>
+          <button type="button" class="open" data-value="open" data-i18n="drawer.openOption">Offen</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="drawer.symbol">Symbol</label>
+          <input type="text" id="f-symbol" placeholder="z.B. AAPL" data-i18n-placeholder="drawer.symbolPlaceholder" required>
+        </div>
+        <div class="field">
+          <label data-i18n="drawer.quantity">Menge</label>
+          <input type="number" id="f-quantity" step="any" placeholder="0" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="drawer.entryDate">Einstiegsdatum</label>
+          <input type="date" id="f-date" required>
+        </div>
+        <div class="field">
+          <label data-i18n="drawer.exitDate">Ausstiegsdatum</label>
+          <input type="date" id="f-exitDate">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="drawer.entryPrice">Einstiegspreis</label>
+          <input type="number" id="f-entryPrice" step="any" placeholder="0.00" required>
+        </div>
+        <div class="field">
+          <label data-i18n="drawer.exitPrice">Ausstiegspreis</label>
+          <input type="number" id="f-exitPrice" step="any" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="drawer.stopLoss">Stop-Loss</label>
+          <input type="number" id="f-stopLoss" step="any" placeholder="optional" data-i18n-placeholder="drawer.stopLossPlaceholder">
+        </div>
+        <div class="field">
+          <label data-i18n="drawer.fees">Gebühren</label>
+          <input type="number" id="f-fees" step="any" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label data-i18n="drawer.leverage">Hebel</label>
+          <input type="number" id="f-leverage" step="any" min="1" placeholder="z.B. 30 (optional)" data-i18n-placeholder="drawer.leveragePlaceholder">
+        </div>
+        <div class="field">
+          <label data-i18n="drawer.margin">Margin (manuell)</label>
+          <input type="number" id="f-margin" step="any" placeholder="automatisch berechnet" data-i18n-placeholder="drawer.marginPlaceholder">
+        </div>
+      </div>
+
+      <div id="liq-hint" class="risk-hint" style="display:none;"></div>
+
+      <div class="field">
+        <label data-i18n="drawer.tagsStrategy">Tags / Strategie</label>
+        <div class="tag-input-wrap" id="tag-input-wrap">
+          <input type="text" id="f-tag-input" placeholder="Tag eingeben + Enter" data-i18n-placeholder="drawer.tagInputPlaceholder">
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="drawer.notes">Notizen</label>
+        <textarea id="f-notes" placeholder="Setup, Begründung, Learnings..." data-i18n-placeholder="drawer.notesPlaceholder"></textarea>
+      </div>
+    </form>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-danger" id="btn-delete-trade" style="display:none; margin-right:auto;" data-i18n="drawer.delete">Löschen</button>
+    <button class="btn" id="btn-cancel-drawer" data-i18n="drawer.cancel">Abbrechen</button>
+    <button class="btn btn-primary" id="btn-save-trade" data-i18n="drawer.save">Speichern</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Wird geladen…</div>
+</div>
+
+<script src="lib/chart.umd.min.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

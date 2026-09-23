@@ -1,0 +1,10 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor/tool-local config — machine-specific, not part of the app
+.claude/
+
+# Internal scale-testing dataset (~28 MB, 100k synthetic trades).
+# Dev-only tool, not meant for the public repo — see app/README.md.
+app/data/stress-test-100k.json
