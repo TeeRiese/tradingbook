@@ -77,7 +77,15 @@ Ist ein Hebel oder eine Margin hinterlegt, berechnet die App einen **näherungsw
 
 ## Mobile Nutzung
 
-Aktuell bewusst nicht optimiert – das Layout ist auf Desktop ausgelegt und die File System Access API (Speichern/Öffnen der JSON-Datei) wird von mobilen Browsern kaum unterstützt. Für ein Trading-Journal mit vielen Statistiken ist der Desktop ohnehin die sinnvollere Arbeitsumgebung.
+Die Oberfläche ist auch am Smartphone voll nutzbar:
+
+- **Navigation:** unten eine Tab-Leiste (Dashboard, Trades, Statistiken, Einstellungen), oben eine schmale Leiste mit Buchname, Status-Punkt und Speichern-Button. Ein runder „+"-Button legt einen neuen Trade an.
+- **Trades:** bis 640 px Breite als Karten statt Tabelle (Symbol, Ergebnis, Liquidationspreis, Tags); Tippen öffnet das Formular. Filter und Sortierung stecken in einem Bottom-Sheet. Ab 641 px (Tablet) bleibt die Tabelle, ein Tipp auf die Zeile öffnet den Trade.
+- **Formular:** Vollbild, Zifferntastatur für Zahlenfelder, Tags werden auch beim Verlassen des Feldes übernommen.
+- **Statistiken:** Kalender-Heatmap startet bei den neuesten Wochen; ein Tipp auf einen Tag zeigt sein Ergebnis darunter.
+- **Sprache:** am Handy im Bereich „Einstellungen" umschaltbar.
+
+**Speichern am Handy:** Mobile Browser kennen die File System Access API meist nicht. Speichern öffnet dort – sofern unterstützt – das System-Teilen-Menü („In Dateien sichern"), sonst wird die JSON-Datei heruntergeladen; Öffnen läuft über die Dateiauswahl. Zusätzlich wird deine Sitzung im Browser zwischengespeichert („Letzte Sitzung fortsetzen"), aber exportiere die Datei trotzdem regelmäßig – mobile Browser können ihren Speicher nach längerer Inaktivität räumen.
 
 ## Performance & Skalierung
 
