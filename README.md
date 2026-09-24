@@ -8,11 +8,11 @@
 
 No account. No cloud. No install. Your trade history lives in a single JSON file you control.
 
-[![Live Demo](https://img.shields.io/badge/demo-trading--book.app-6c8cff?style=flat-square)](https://trading-book.app)
+[![Live Demo](https://img.shields.io/badge/demo-trading--book.de-6c8cff?style=flat-square)](https://trading-book.de)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22e0c2?style=flat-square)](LICENSE)
 [![No build step](https://img.shields.io/badge/build_step-none-eef1f5?style=flat-square)](#tech-stack)
 
-[**🚀 Try it live**](https://trading-book.app) · [Deutsche Version](README.de.md) · [Features](#features) · [Quick start](#quick-start)
+[**🚀 Try it live**](https://trading-book.de) · [Deutsche Version](README.de.md) · [Features](#features) · [Quick start](#quick-start)
 
 </div>
 
@@ -23,7 +23,7 @@ No account. No cloud. No install. Your trade history lives in a single JSON file
 Most trading journals are SaaS products: you sign up, they host your trade history, and you hope they stay in business. TradingBook takes the opposite approach — it's a single static web page. Open it in your browser, pick (or create) a JSON file on your disk, and that file *is* your database. Nothing is ever uploaded anywhere. Close the tab, and your data is exactly where you left it, on your own hard drive.
 
 - **Private by construction** — there's no server for your data to go to. Everything runs client-side in the browser.
-- **No install, no build step** — it's plain HTML/CSS/JavaScript. Open `index.html`, or just use the [hosted version](https://trading-book.app).
+- **No install, no build step** — it's plain HTML/CSS/JavaScript. Open `index.html`, or just use the [hosted version](https://trading-book.de).
 - **Your file, your rules** — a portable `.json` you can back up, version, sync, or inspect yourself at any time.
 - **Bilingual** — full German/English UI, switchable instantly, no reload.
 
@@ -52,7 +52,7 @@ Most trading journals are SaaS products: you sign up, they host your trade histo
 
 ## Quick start
 
-**Use it hosted, no download needed:** [**trading-book.app**](https://trading-book.app) — your data still never leaves your browser; the site just serves the static files.
+**Use it hosted, no download needed:** [**trading-book.de**](https://trading-book.de) — your data still never leaves your browser; the site just serves the static files.
 
 **Or run it yourself:**
 

@@ -8,11 +8,11 @@
 
 Kein Account. Keine Cloud. Keine Installation. Deine Trade-Historie liegt in einer einzigen JSON-Datei, die du selbst kontrollierst.
 
-[![Live Demo](https://img.shields.io/badge/demo-trading--book.app-6c8cff?style=flat-square)](https://trading-book.app)
+[![Live Demo](https://img.shields.io/badge/demo-trading--book.de-6c8cff?style=flat-square)](https://trading-book.de)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22e0c2?style=flat-square)](LICENSE)
 [![No build step](https://img.shields.io/badge/build_step-none-eef1f5?style=flat-square)](#technik)
 
-[**🚀 Jetzt ausprobieren**](https://trading-book.app) · [English version](README.md) · [Funktionen](#funktionen) · [Schnellstart](#schnellstart)
+[**🚀 Jetzt ausprobieren**](https://trading-book.de) · [English version](README.md) · [Funktionen](#funktionen) · [Schnellstart](#schnellstart)
 
 </div>
 
@@ -23,7 +23,7 @@ Kein Account. Keine Cloud. Keine Installation. Deine Trade-Historie liegt in ein
 Die meisten Trading-Journale sind SaaS-Produkte: Man legt einen Account an, ein fremder Server verwaltet die eigene Trade-Historie, und man hofft, dass der Anbieter langfristig bestehen bleibt. TradingBook geht den umgekehrten Weg — es ist eine einzelne statische Webseite. Im Browser öffnen, eine JSON-Datei auf der eigenen Festplatte auswählen (oder neu anlegen) — diese Datei *ist* die Datenbank. Es wird nichts irgendwohin hochgeladen. Tab schließen, und die Daten liegen exakt dort, wo man sie zurückgelassen hat: auf der eigenen Festplatte.
 
 - **Privat by Design** — es gibt keinen Server, an den die Daten überhaupt gehen könnten. Alles läuft clientseitig im Browser.
-- **Keine Installation, kein Build-Schritt** — reines HTML/CSS/JavaScript. `index.html` öffnen, oder direkt die [gehostete Version](https://trading-book.app) nutzen.
+- **Keine Installation, kein Build-Schritt** — reines HTML/CSS/JavaScript. `index.html` öffnen, oder direkt die [gehostete Version](https://trading-book.de) nutzen.
 - **Deine Datei, deine Regeln** — eine portable `.json`, die du selbst sichern, versionieren, synchronisieren oder einsehen kannst.
 - **Zweisprachig** — vollständige deutsche/englische Oberfläche, sofort umschaltbar, ohne Neuladen.
 
@@ -52,7 +52,7 @@ Die meisten Trading-Journale sind SaaS-Produkte: Man legt einen Account an, ein 
 
 ## Schnellstart
 
-**Direkt nutzen, kein Download nötig:** [**trading-book.app**](https://trading-book.app) — die Daten verlassen trotzdem nie deinen Browser, die Seite liefert nur die statischen Dateien aus.
+**Direkt nutzen, kein Download nötig:** [**trading-book.de**](https://trading-book.de) — die Daten verlassen trotzdem nie deinen Browser, die Seite liefert nur die statischen Dateien aus.
 
 **Oder selbst hosten:**
 
