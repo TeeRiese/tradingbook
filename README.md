@@ -51,6 +51,10 @@ Most trading journals are SaaS products: you sign up, they host your trade histo
 </tr>
 </table>
 
+**On your phone** — bottom tab bar, trade cards, full-screen trade form:
+
+<img src="screenshots/mobile-en.png" alt="TradingBook on a smartphone: dashboard, trade list and trade form">
+
 ## Quick start
 
 **Use it hosted, no download needed:** [**trading-book.de**](https://trading-book.de) — your data still never leaves your browser; the site just serves the static files.

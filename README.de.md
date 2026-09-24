@@ -51,6 +51,10 @@ Die meisten Trading-Journale sind SaaS-Produkte: Man legt einen Account an, ein 
 </tr>
 </table>
 
+**Auf dem Smartphone** — Tab-Leiste unten, Trade-Karten, Vollbild-Formular:
+
+<img src="screenshots/mobile-de.png" alt="TradingBook auf dem Smartphone: Dashboard, Trade-Liste und Trade-Formular">
+
 ## Schnellstart
 
 **Direkt nutzen, kein Download nötig:** [**trading-book.de**](https://trading-book.de) — die Daten verlassen trotzdem nie deinen Browser, die Seite liefert nur die statischen Dateien aus.
