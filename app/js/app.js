@@ -11,6 +11,7 @@ const App = (() => {
   let tradesSort = { key: 'date', dir: 'desc' };
   let goalMonthOffset = 0;
   let tradesPage = 1;
+  let filterSheetOpen = false; // phone-only bottom sheet holding the secondary trade filters
   let tradesPageSize = 50;
   let autosaveOk = true;
   let searchDebounceTimer = null;
@@ -99,6 +100,7 @@ const App = (() => {
       wrap.classList.remove('unsaved');
       text.textContent = t('app.ready');
     }
+    wrap.title = text.textContent; // phones show only the dot; keep the text reachable
   }
 
   // ---------- i18n plumbing ----------
@@ -208,6 +210,7 @@ const App = (() => {
 
     $$('.nav-item').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
     $('#btn-save').addEventListener('click', () => saveBook());
+    $('#fab-add-trade').addEventListener('click', () => openDrawer());
 
     bindDrawer();
 
@@ -261,8 +264,13 @@ const App = (() => {
 
   async function saveBook(forcePicker = false) {
     try {
-      showLoading(t('loading.saving'));
-      await nextPaint();
+      // Without the File System Access API, saving goes through the share
+      // sheet, which must start inside the tap's user-activation window —
+      // so skip the paint-wait there.
+      if (Storage.supportsFSA) {
+        showLoading(t('loading.saving'));
+        await nextPaint();
+      }
       await Storage.saveFile(book, forcePicker);
       dirty = false;
       updateFileStatus(true);
@@ -282,6 +290,9 @@ const App = (() => {
     ['dashboard', 'trades', 'stats', 'settings'].forEach(v => {
       $(`#view-${v}`).style.display = v === view ? 'block' : 'none';
     });
+    // Floating add button — only rendered visible on phones (CSS), and only
+    // on the views where adding a trade makes sense.
+    $('#fab-add-trade').style.display = (view === 'dashboard' || view === 'trades') ? '' : 'none';
     if (view === 'dashboard') renderDashboard();
     if (view === 'trades') renderTrades();
     if (view === 'stats') renderStats();
@@ -590,21 +601,31 @@ const App = (() => {
 
       <div class="filter-bar">
         <input type="text" id="filter-search" placeholder="${t('trades.searchPlaceholder')}" value="${filters.search}">
-        <select id="filter-symbol"><option value="">${t('trades.allSymbols')}</option>${symbols.map(s => `<option ${filters.symbol === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-        <select id="filter-tag"><option value="">${t('trades.allTags')}</option>${tags.map(tag => `<option ${filters.tag === tag ? 'selected' : ''}>${tag}</option>`).join('')}</select>
-        <select id="filter-direction">
-          <option value="">${t('trades.longAndShort')}</option>
-          <option value="long" ${filters.direction === 'long' ? 'selected' : ''}>Long</option>
-          <option value="short" ${filters.direction === 'short' ? 'selected' : ''}>Short</option>
-        </select>
-        <select id="filter-status">
-          <option value="">${t('trades.allStatus')}</option>
-          <option value="closed" ${filters.status === 'closed' ? 'selected' : ''}>${t('trades.closedOption')}</option>
-          <option value="open" ${filters.status === 'open' ? 'selected' : ''}>${t('trades.openOption')}</option>
-        </select>
-        <input type="date" id="filter-from" value="${filters.from}">
-        <input type="date" id="filter-to" value="${filters.to}">
-        <button class="btn btn-ghost btn-sm" id="btn-clear-filters" ${hasActiveFilters() ? '' : 'disabled'}>${icon('undo', 'icon-xs')} ${t('trades.resetFilters')}</button>
+        <button type="button" class="btn filter-toggle" id="btn-filter-toggle">${icon('filter', 'icon-xs')} ${t('trades.filters')}${activeSecondaryFilters() ? ` <span class="filter-count">${activeSecondaryFilters()}</span>` : ''}</button>
+        <select id="sort-select" class="sort-mobile" aria-label="${t('trades.sortBy')}">${sortOptionsHtml()}</select>
+        <div class="filter-backdrop ${filterSheetOpen ? 'open' : ''}" id="filter-backdrop"></div>
+        <div class="filter-sheet ${filterSheetOpen ? 'open' : ''}" id="filter-sheet">
+          <div class="filter-sheet-head">
+            <span>${t('trades.filters')}</span>
+            <button type="button" class="icon-btn" id="btn-filter-close">${icon('close', 'icon-xs')}</button>
+          </div>
+          <select id="filter-symbol"><option value="">${t('trades.allSymbols')}</option>${symbols.map(s => `<option ${filters.symbol === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+          <select id="filter-tag"><option value="">${t('trades.allTags')}</option>${tags.map(tag => `<option ${filters.tag === tag ? 'selected' : ''}>${tag}</option>`).join('')}</select>
+          <select id="filter-direction">
+            <option value="">${t('trades.longAndShort')}</option>
+            <option value="long" ${filters.direction === 'long' ? 'selected' : ''}>Long</option>
+            <option value="short" ${filters.direction === 'short' ? 'selected' : ''}>Short</option>
+          </select>
+          <select id="filter-status">
+            <option value="">${t('trades.allStatus')}</option>
+            <option value="closed" ${filters.status === 'closed' ? 'selected' : ''}>${t('trades.closedOption')}</option>
+            <option value="open" ${filters.status === 'open' ? 'selected' : ''}>${t('trades.openOption')}</option>
+          </select>
+          <input type="date" id="filter-from" value="${filters.from}">
+          <input type="date" id="filter-to" value="${filters.to}">
+          <button class="btn btn-ghost btn-sm" id="btn-clear-filters" ${hasActiveFilters() ? '' : 'disabled'}>${icon('undo', 'icon-xs')} ${t('trades.resetFilters')}</button>
+          <button type="button" class="btn btn-primary filter-done" id="btn-filter-done">${t('trades.showResults', { count: all.length })}</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -618,6 +639,16 @@ const App = (() => {
       const value = e.target.value;
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => { filters.search = value; tradesPage = 1; renderTrades(); }, 200);
+    };
+    $('#btn-filter-toggle').onclick = () => setFilterSheet(true);
+    $('#btn-filter-close').onclick = () => setFilterSheet(false);
+    $('#btn-filter-done').onclick = () => setFilterSheet(false);
+    $('#filter-backdrop').onclick = () => setFilterSheet(false);
+    $('#sort-select').onchange = (e) => {
+      const [key, dir] = e.target.value.split(':');
+      tradesSort = { key, dir };
+      tradesPage = 1;
+      renderTrades();
     };
     $('#filter-symbol').onchange = (e) => { filters.symbol = e.target.value; tradesPage = 1; renderTrades(); };
     $('#filter-tag').onchange = (e) => { filters.tag = e.target.value; tradesPage = 1; renderTrades(); };
@@ -666,6 +697,31 @@ const App = (() => {
           <button class="btn btn-sm" id="btn-page-next" ${tradesPage >= totalPages ? 'disabled' : ''}>${t('trades.next')} ${icon('chevronRight', 'icon-xs')}</button>
         </div>
       </div>`;
+  }
+
+  function setFilterSheet(open) {
+    filterSheetOpen = open;
+    $('#filter-sheet').classList.toggle('open', open);
+    $('#filter-backdrop').classList.toggle('open', open);
+    document.body.classList.toggle('no-scroll', open);
+  }
+
+  // Filters other than the free-text search (which stays visible on phones).
+  function activeSecondaryFilters() {
+    return Object.entries(filters).filter(([k, v]) => k !== 'search' && v).length;
+  }
+
+  // Phones have no clickable table headers, so sorting moves into a dropdown.
+  function sortOptionsHtml() {
+    const keys = ['date', 'pnl', 'pnlPercent', 'symbol'];
+    const cols = getTradeColumns().filter(c => keys.includes(c.key));
+    return keys.flatMap(k => {
+      const label = cols.find(c => c.key === k).label;
+      return ['desc', 'asc'].map(dir => {
+        const selected = tradesSort.key === k && tradesSort.dir === dir ? 'selected' : '';
+        return `<option value="${k}:${dir}" ${selected}>${label} ${dir === 'desc' ? '↓' : '↑'}</option>`;
+      });
+    }).join('');
   }
 
   function hasActiveFilters() {
@@ -750,6 +806,7 @@ const App = (() => {
           </td>
         </tr>`;
     }).join('');
+    const cards = trades.map(tradeCardHtml).join('');
     const columns = getTradeColumns();
     const headCells = columns.map(c => {
       const titleAttr = c.title ? ` title="${c.title}"` : '';
@@ -764,10 +821,57 @@ const App = (() => {
           <thead><tr>${headCells}<th>${t('col.tags')}</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
+      </div>
+      <div class="trade-cards">${cards}</div>`;
+  }
+
+  // Phone layout of one trade: a tappable card instead of a 12-column table
+  // row. Everything the table hides in tooltips is spelled out here.
+  function tradeCardHtml(tr) {
+    const pnl = Stats.pnl(tr);
+    const pct = Stats.pnlPercent(tr);
+    const liq = Stats.liquidationPrice(tr);
+    const unsafeStop = Stats.stopBeyondLiquidation(tr);
+    const valueHtml = tr.status === 'open'
+      ? `<span class="badge badge-open">${t('status.open')}</span>`
+      : (pnl != null ? `<span class="${signClass(pnl)}">${fmtMoney(pnl)}</span>` : '–');
+    const liqHtml = liq != null
+      ? `<span class="${unsafeStop ? 'neg' : (Stats.isHighLeverage(tr) ? 'warn' : '')}">${unsafeStop ? icon('warning', 'icon-xs') : ''}${t('trades.liqShort')} ${fmtPrice(liq)}</span>`
+      : '';
+    const tags = (tr.tags || []).map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
+    return `
+      <div class="trade-card" data-id="${tr.id}" role="button" tabindex="0">
+        <div class="tc-top">
+          <div class="tc-title">
+            <strong>${tr.symbol}</strong>
+            <span class="badge badge-${tr.direction}">${tr.direction === 'long' ? 'Long' : 'Short'}</span>
+            ${tr.leverage ? `<span class="badge badge-tag">${tr.leverage}x</span>` : ''}
+          </div>
+          <div class="tc-pnl">${valueHtml}</div>
+        </div>
+        <div class="tc-meta">
+          <span>${fmtDate(tr.exitDate || tr.date)}</span>
+          <span>${tr.quantity} @ ${tr.entryPrice}${tr.exitPrice != null ? ` → ${tr.exitPrice}` : ''}</span>
+          ${pct != null ? `<span class="${signClass(pct)}">${fmtPct(pct)}</span>` : ''}
+          ${liqHtml}
+        </div>
+        ${tags ? `<div class="tc-tags">${tags}</div>` : ''}
       </div>`;
   }
 
   function bindTableRowActions(root) {
+    // Touch tablets show the table but have no hover/precise edit button: let a row tap open the trade.
+    root.querySelectorAll('tbody tr[data-id]').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('button') || !window.matchMedia('(pointer: coarse)').matches) return;
+        openDrawer(row.dataset.id);
+      });
+    });
+    root.querySelectorAll('.trade-card').forEach(card => {
+      const open = () => openDrawer(card.dataset.id);
+      card.onclick = open;
+      card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    });
     root.querySelectorAll('.btn-edit').forEach(btn => {
       btn.onclick = () => openDrawer(btn.closest('tr').dataset.id);
     });
@@ -845,7 +949,7 @@ const App = (() => {
         </div>
       </div>
 
-      <div class="filter-bar">
+      <div class="filter-bar stats-filter">
         <select id="stats-preset">
           ${presets.map(p => `<option value="${p.value}" ${statsFilter.preset === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
         </select>
@@ -944,6 +1048,19 @@ const App = (() => {
     };
     const statsResetBtn = $('#btn-stats-reset');
     if (statsResetBtn) statsResetBtn.onclick = () => { statsFilter = { preset: 'all', from: '', to: '' }; renderStats(); };
+    bindHeatmap(el);
+  }
+
+  // Touch has no hover tooltips: tapping a day shows its result under the grid.
+  // The grid also opens scrolled to the most recent weeks.
+  function bindHeatmap(root) {
+    const wrap = root.querySelector('.heat-grid-wrap');
+    if (!wrap) return;
+    wrap.scrollLeft = wrap.scrollWidth;
+    const info = root.querySelector('.heat-info');
+    wrap.querySelectorAll('.heat-cell[data-info]').forEach(cell => {
+      cell.onclick = () => { info.textContent = cell.dataset.info; };
+    });
   }
 
   function emptyMini(msg = null) {
@@ -1002,12 +1119,12 @@ const App = (() => {
         } else {
           title = t('heat.dayEmpty', { date: fmtDate(iso) });
         }
-        return `<div class="heat-cell"${style} title="${title}"></div>`;
+        return `<div class="heat-cell"${style} title="${title}" data-info="${title}"></div>`;
       }).join('');
       return `<div class="heat-week"><div class="heat-month-label">${label}</div><div class="heat-days">${cells}</div></div>`;
     }).join('');
 
-    return `<div class="heat-grid-wrap"><div class="heat-grid">${weekCols}</div></div>`;
+    return `<div class="heat-grid-wrap"><div class="heat-grid">${weekCols}</div></div><div class="heat-info" aria-live="polite"></div>`;
   }
 
   function renderGroupList(groups) {
@@ -1033,6 +1150,16 @@ const App = (() => {
         <div>
           <div class="page-title">${t('settings.title')}</div>
           <div class="page-subtitle">${t('settings.subtitle')}</div>
+        </div>
+      </div>
+
+      <div class="panel mobile-only">
+        <div class="list-row">
+          <div class="list-row-main">${t('settings.language')}</div>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" data-lang="de">DE</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
         </div>
       </div>
 
@@ -1089,6 +1216,8 @@ const App = (() => {
       </div>
     `;
 
+    updateLangSwitchUI();
+    bindLangSwitches();
     $('#btn-save-as').onclick = () => saveBook(true);
     $('#btn-open-other').onclick = async () => {
       if (dirty && !confirm(t('settings.confirmOpenOther'))) return;
@@ -1138,17 +1267,17 @@ const App = (() => {
       $(sel).addEventListener('input', updateLiqHint);
     });
 
-    $('#f-tag-input').addEventListener('keydown', (e) => {
+    // Soft keyboards don't reliably report Enter/comma as key events, so a tag
+    // is also committed on blur, on a typed comma and when the form is saved.
+    const tagInput = $('#f-tag-input');
+    tagInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
-        const val = e.target.value.trim();
-        if (val && !formTags.includes(val)) {
-          formTags.push(val);
-          renderTagChips();
-        }
-        e.target.value = '';
+        commitTagInput();
       }
     });
+    tagInput.addEventListener('input', () => { if (tagInput.value.includes(',')) commitTagInput(); });
+    tagInput.addEventListener('blur', commitTagInput);
   }
 
   function setSegmented(containerSel, value) {
@@ -1249,16 +1378,30 @@ const App = (() => {
 
     $('#drawer-overlay').classList.add('open');
     $('#trade-drawer').classList.add('open');
-    setTimeout(() => $('#f-symbol').focus(), 50);
+    document.body.classList.add('no-scroll');
+    // Don't pop the on-screen keyboard when merely opening an existing trade on a touch device.
+    if (!trade || !window.matchMedia('(pointer: coarse)').matches) setTimeout(() => $('#f-symbol').focus(), 50);
+  }
+
+  function commitTagInput() {
+    const input = $('#f-tag-input');
+    const val = input.value.replace(/,/g, '').trim();
+    input.value = '';
+    if (val && !formTags.includes(val)) {
+      formTags.push(val);
+      renderTagChips();
+    }
   }
 
   function closeDrawer() {
     $('#drawer-overlay').classList.remove('open');
     $('#trade-drawer').classList.remove('open');
+    document.body.classList.remove('no-scroll');
     editingId = null;
   }
 
   function submitTradeForm() {
+    commitTagInput();
     const form = $('#trade-form');
     if (!form.reportValidity()) return;
 

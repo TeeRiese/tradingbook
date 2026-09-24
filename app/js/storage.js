@@ -52,7 +52,10 @@ const Storage = (() => {
     return new Promise((resolve, reject) => {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'application/json';
+      input.accept = 'application/json,.json';
+      // Fires when the picker is dismissed without a choice (modern browsers);
+      // without it the promise would never settle.
+      input.addEventListener('cancel', () => reject(new DOMException('cancelled', 'AbortError')));
       input.onchange = () => {
         const file = input.files[0];
         if (!file) return reject(new Error('Keine Datei ausgewählt'));
@@ -91,12 +94,28 @@ const Storage = (() => {
     return saveFileFallback(text, data.name);
   }
 
-  function saveFileFallback(text, name) {
+  // On phones a plain download often lands somewhere hard to find (or is
+  // blocked); the share sheet lets the user pick "Save to Files", Drive, etc.
+  async function saveFileFallback(text, name) {
+    const fileName = `${slugifyFilename(name)}.json`;
+    const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch && navigator.canShare && navigator.share) {
+      const file = new File([text], fileName, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: fileName });
+          return true;
+        } catch (e) {
+          if (e.name === 'AbortError') throw e; // user dismissed the sheet: not saved
+          // any other failure: fall through to the plain download
+        }
+      }
+    }
     const blob = new Blob([text], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${slugifyFilename(name)}.json`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     a.remove();

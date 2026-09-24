@@ -35,6 +35,7 @@ Most trading journals are SaaS products: you sign up, they host your trade histo
 - **Monthly goal tracking** — set a target return %, watch progress with a month-by-month history over the last 24 months.
 - **Leverage & risk tools** — track leverage or a manual margin per trade (fits CFD/Forex/crypto-margin *and* futures/options), with an approximate liquidation price and automatic warnings when a stop-loss sits past it or leverage runs high.
 - **Fees, tracked everywhere** — every P&L figure (dashboard, equity curve, drawdown, calendar, goal tracking, R-multiples) is net of fees, not just the raw price move.
+- **Mobile-ready** — on phones the UI switches to a bottom tab bar, trade cards instead of a wide table, a filter sheet and a full-screen trade form; saving goes through the share sheet ("Save to Files").
 - **Undo-friendly** — deleting a trade shows a toast with an undo option instead of a confirmation dialog.
 
 ## Screenshots
@@ -68,7 +69,7 @@ A sample dataset (`app/data/beispiel.json`, ~5,000 trades) is included — pick 
 
 ## Browser support
 
-Full functionality (direct read/write to your file, no download prompts) needs the **File System Access API** — currently **Chrome or Edge**. Safari and Firefox work too, with saving falling back to a regular file download instead of an in-place write.
+Full functionality (direct read/write to your file, no download prompts) needs the **File System Access API** — currently **Chrome or Edge**. Safari and Firefox work too, with saving falling back to a regular file download instead of an in-place write. On phones, saving opens the system share sheet where supported, and your session is additionally cached in the browser — export your file regularly.
 
 ## Tech stack
 

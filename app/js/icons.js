@@ -12,6 +12,7 @@ const Icons = (() => {
     edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
     delete: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
     close: '<path d="M18 6 6 18"/><path d="M6 6l12 12"/>',
+    filter: '<path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/>',
     plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
     folderOpen: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H8a2 2 0 0 0-1.94 1.51L4 19"/><path d="M3 7v10a2 2 0 0 0 2 2h13.5a2 2 0 0 0 1.94-1.51L22 12H6.5a2 2 0 0 0-1.94 1.51L3 19"/>',
     sparkle: '<path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="M6 6l2.5 2.5"/><path d="M15.5 15.5 18 18"/><path d="M18 6l-2.5 2.5"/><path d="M8.5 15.5 6 18"/><circle cx="12" cy="12" r="2.5"/>',

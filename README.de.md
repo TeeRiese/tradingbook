@@ -35,6 +35,7 @@ Die meisten Trading-Journale sind SaaS-Produkte: Man legt einen Account an, ein 
 - **Monatsziel-Tracking** — Zielrendite in % festlegen, Fortschritt inkl. Verlauf der letzten 24 Monate verfolgen.
 - **Hebel & Risiko-Tools** — Hebel oder manuelle Margin pro Trade (passt für CFD/Forex/Krypto-Margin *und* Futures/Optionen), inkl. näherungsweisem Liquidationspreis und automatischen Warnungen bei zu hohem Hebel oder einem Stop-Loss hinter dem Liquidationspreis.
 - **Gebühren, überall berücksichtigt** — jede P&L-Kennzahl (Dashboard, Equity-Kurve, Drawdown, Kalender, Monatsziel, R-Multiples) rechnet Gebühren mit ein, nicht nur die reine Kursbewegung.
+- **Mobil nutzbar** — auf dem Smartphone wechselt die Oberfläche zu Tab-Leiste unten, Trade-Karten statt breiter Tabelle, Filter-Sheet und Vollbild-Formular; Speichern läuft über das Teilen-Menü („In Dateien sichern“).
 - **Rückgängig statt Rückfrage** — Löschen eines Trades zeigt einen Toast mit Rückgängig-Option statt eines Bestätigungsdialogs.
 
 ## Screenshots
@@ -68,7 +69,7 @@ Ein Beispiel-Datensatz (`app/data/beispiel.json`, ca. 5.000 Trades) liegt bei �
 
 ## Browser-Unterstützung
 
-Der volle Funktionsumfang (direktes Lesen/Schreiben der Datei, ohne Download-Dialog) braucht die **File System Access API** — aktuell **Chrome oder Edge**. Safari und Firefox funktionieren ebenfalls, Speichern fällt dort auf einen regulären Datei-Download zurück statt direkt zu überschreiben.
+Der volle Funktionsumfang (direktes Lesen/Schreiben der Datei, ohne Download-Dialog) braucht die **File System Access API** — aktuell **Chrome oder Edge**. Safari und Firefox funktionieren ebenfalls, Speichern fällt dort auf einen regulären Datei-Download zurück statt direkt zu überschreiben. Auf dem Smartphone öffnet Speichern – sofern unterstützt – das System-Teilen-Menü; zusätzlich wird deine Sitzung im Browser zwischengespeichert — exportiere die Datei trotzdem regelmäßig.
 
 ## Technik
 

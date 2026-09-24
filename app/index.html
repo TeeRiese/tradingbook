@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c0f">
 <title>Trading Book</title>
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://trading-book.de/app/">
@@ -53,6 +54,8 @@
   </main>
 </div>
 
+<button class="fab" id="fab-add-trade" type="button" style="display:none;" data-i18n-title="dashboard.newTrade" aria-label="Neuer Trade"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+
 <div class="overlay" id="drawer-overlay"></div>
 <aside class="drawer" id="trade-drawer">
   <div class="drawer-header">
@@ -86,7 +89,7 @@
         </div>
         <div class="field">
           <label data-i18n="drawer.quantity">Menge</label>
-          <input type="number" id="f-quantity" step="any" placeholder="0" required>
+          <input type="number" id="f-quantity" step="any" inputmode="decimal" placeholder="0" required>
         </div>
       </div>
 
@@ -104,33 +107,33 @@
       <div class="field-row">
         <div class="field">
           <label data-i18n="drawer.entryPrice">Einstiegspreis</label>
-          <input type="number" id="f-entryPrice" step="any" placeholder="0.00" required>
+          <input type="number" id="f-entryPrice" step="any" inputmode="decimal" placeholder="0.00" required>
         </div>
         <div class="field">
           <label data-i18n="drawer.exitPrice">Ausstiegspreis</label>
-          <input type="number" id="f-exitPrice" step="any" placeholder="0.00">
+          <input type="number" id="f-exitPrice" step="any" inputmode="decimal" placeholder="0.00">
         </div>
       </div>
 
       <div class="field-row">
         <div class="field">
           <label data-i18n="drawer.stopLoss">Stop-Loss</label>
-          <input type="number" id="f-stopLoss" step="any" placeholder="optional" data-i18n-placeholder="drawer.stopLossPlaceholder">
+          <input type="number" id="f-stopLoss" step="any" inputmode="decimal" placeholder="optional" data-i18n-placeholder="drawer.stopLossPlaceholder">
         </div>
         <div class="field">
           <label data-i18n="drawer.fees">Gebühren</label>
-          <input type="number" id="f-fees" step="any" placeholder="0.00">
+          <input type="number" id="f-fees" step="any" inputmode="decimal" placeholder="0.00">
         </div>
       </div>
 
       <div class="field-row">
         <div class="field">
           <label data-i18n="drawer.leverage">Hebel</label>
-          <input type="number" id="f-leverage" step="any" min="1" placeholder="z.B. 30 (optional)" data-i18n-placeholder="drawer.leveragePlaceholder">
+          <input type="number" id="f-leverage" step="any" inputmode="decimal" min="1" placeholder="z.B. 30 (optional)" data-i18n-placeholder="drawer.leveragePlaceholder">
         </div>
         <div class="field">
           <label data-i18n="drawer.margin">Margin (manuell)</label>
-          <input type="number" id="f-margin" step="any" placeholder="automatisch berechnet" data-i18n-placeholder="drawer.marginPlaceholder">
+          <input type="number" id="f-margin" step="any" inputmode="decimal" placeholder="automatisch berechnet" data-i18n-placeholder="drawer.marginPlaceholder">
         </div>
       </div>
 
@@ -139,7 +142,7 @@
       <div class="field">
         <label data-i18n="drawer.tagsStrategy">Tags / Strategie</label>
         <div class="tag-input-wrap" id="tag-input-wrap">
-          <input type="text" id="f-tag-input" placeholder="Tag eingeben + Enter" data-i18n-placeholder="drawer.tagInputPlaceholder">
+          <input type="text" id="f-tag-input" enterkeyhint="done" autocapitalize="off" placeholder="Tag eingeben + Enter" data-i18n-placeholder="drawer.tagInputPlaceholder">
         </div>
       </div>
 
