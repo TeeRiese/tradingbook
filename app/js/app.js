@@ -31,6 +31,45 @@ const App = (() => {
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
   const signClass = (v) => (v > 0 ? 'pos' : v < 0 ? 'neg' : 'neutral');
   const uid = () => `t_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // Everything that came from a file (symbols, tags, names, ids, even "numbers") is untrusted:
+  // it is escaped wherever it is put into HTML and coerced to the expected types on load.
+  const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ESC_MAP[c]);
+
+  const numOrNull = (v) => {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  function sanitizeBook(b) {
+    b.name = typeof b.name === 'string' ? b.name : 'Trading Book';
+    b.tags = Array.isArray(b.tags) ? b.tags.map(String) : [];
+    b.settings = (b.settings && typeof b.settings === 'object') ? b.settings : {};
+    b.settings.startingCapital = numOrNull(b.settings.startingCapital) ?? 0;
+    b.settings.currency = /^[A-Z]{3}$/.test(b.settings.currency) ? b.settings.currency : 'EUR'; // Intl throws on bad codes
+    b.settings.monthlyGoalPct = numOrNull(b.settings.monthlyGoalPct);
+    b.trades = Array.isArray(b.trades) ? b.trades.filter(tr => tr && typeof tr === 'object') : [];
+    for (const tr of b.trades) {
+      tr.id = tr.id == null ? uid() : String(tr.id);
+      tr.symbol = String(tr.symbol ?? '');
+      tr.direction = tr.direction === 'short' ? 'short' : 'long';
+      tr.status = tr.status === 'open' ? 'open' : 'closed';
+      tr.quantity = numOrNull(tr.quantity) ?? 0;
+      tr.entryPrice = numOrNull(tr.entryPrice) ?? 0;
+      tr.exitPrice = numOrNull(tr.exitPrice);
+      tr.stopLoss = numOrNull(tr.stopLoss);
+      tr.fees = numOrNull(tr.fees) ?? 0;
+      tr.leverage = numOrNull(tr.leverage);
+      tr.margin = numOrNull(tr.margin);
+      tr.tags = Array.isArray(tr.tags) ? tr.tags.map(String) : [];
+      tr.notes = String(tr.notes ?? '');
+      tr.date = String(tr.date ?? '');
+      tr.exitDate = tr.exitDate ? String(tr.exitDate) : null;
+    }
+    return b;
+  }
   const tradeWord = (n) => (n === 1 ? t('common.trade') : t('common.trades'));
 
   // Group keys from Stats (weekday codes, '__untagged__', '__other__') are
@@ -185,7 +224,7 @@ const App = (() => {
           // writes straight back to the file instead of prompting again.
           const reconnectedName = await Storage.reconnectStoredHandle();
           loadBook(cached, true);
-          if (reconnectedName) toast(t('app.reconnected', { name: reconnectedName }));
+          if (reconnectedName) toast(t('app.reconnected', { name: esc(reconnectedName) }));
         } finally {
           hideLoading();
         }
@@ -227,7 +266,7 @@ const App = (() => {
   }
 
   function loadBook(data, unsavedByDefault = false, fileName = null) {
-    book = data;
+    book = sanitizeBook(data && typeof data === 'object' ? data : {});
     book.name ??= fileName || 'Trading Book';
     book.settings ??= { startingCapital: 10000, currency: 'EUR' };
     book.tags ??= [];
@@ -535,7 +574,7 @@ const App = (() => {
           <div class="risk-row ${i.danger ? 'danger' : ''}">
             <div class="risk-row-icon">${i.danger ? icon('danger') : icon('warning')}</div>
             <div>
-              <div class="risk-row-main">${i.symbol}</div>
+              <div class="risk-row-main">${esc(i.symbol)}</div>
               <div class="risk-row-sub">${i.text}</div>
             </div>
           </div>`).join('')}
@@ -618,7 +657,7 @@ const App = (() => {
       </div>
 
       <div class="filter-bar">
-        <input type="text" id="filter-search" placeholder="${t('trades.searchPlaceholder')}" value="${filters.search}">
+        <input type="text" id="filter-search" placeholder="${t('trades.searchPlaceholder')}" value="${esc(filters.search)}">
         <button type="button" class="btn filter-toggle" id="btn-filter-toggle">${icon('filter', 'icon-xs')} ${t('trades.filters')}${activeSecondaryFilters() ? ` <span class="filter-count">${activeSecondaryFilters()}</span>` : ''}</button>
         <select id="sort-select" class="sort-mobile" aria-label="${t('trades.sortBy')}">${sortOptionsHtml()}</select>
         <div class="filter-backdrop ${filterSheetOpen ? 'open' : ''}" id="filter-backdrop"></div>
@@ -627,8 +666,8 @@ const App = (() => {
             <span>${t('trades.filters')}</span>
             <button type="button" class="icon-btn" id="btn-filter-close">${icon('close', 'icon-xs')}</button>
           </div>
-          <select id="filter-symbol"><option value="">${t('trades.allSymbols')}</option>${symbols.map(s => `<option ${filters.symbol === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-          <select id="filter-tag"><option value="">${t('trades.allTags')}</option>${tags.map(tag => `<option ${filters.tag === tag ? 'selected' : ''}>${tag}</option>`).join('')}</select>
+          <select id="filter-symbol"><option value="">${t('trades.allSymbols')}</option>${symbols.map(s => `<option ${filters.symbol === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>
+          <select id="filter-tag"><option value="">${t('trades.allTags')}</option>${tags.map(tag => `<option ${filters.tag === tag ? 'selected' : ''}>${esc(tag)}</option>`).join('')}</select>
           <select id="filter-direction">
             <option value="">${t('trades.longAndShort')}</option>
             <option value="long" ${filters.direction === 'long' ? 'selected' : ''}>Long</option>
@@ -639,8 +678,8 @@ const App = (() => {
             <option value="closed" ${filters.status === 'closed' ? 'selected' : ''}>${t('trades.closedOption')}</option>
             <option value="open" ${filters.status === 'open' ? 'selected' : ''}>${t('trades.openOption')}</option>
           </select>
-          <input type="date" id="filter-from" value="${filters.from}">
-          <input type="date" id="filter-to" value="${filters.to}">
+          <input type="date" id="filter-from" value="${esc(filters.from)}">
+          <input type="date" id="filter-to" value="${esc(filters.to)}">
           <button class="btn btn-ghost btn-sm" id="btn-clear-filters" ${hasActiveFilters() ? '' : 'disabled'}>${icon('undo', 'icon-xs')} ${t('trades.resetFilters')}</button>
           <button type="button" class="btn btn-primary filter-done" id="btn-filter-done">${t('trades.showResults', { count: all.length })}</button>
         </div>
@@ -802,20 +841,20 @@ const App = (() => {
         liqCell = `<span class="${cls}" title="${title}">${warnIcon}${fmtPrice(liq)}</span>`;
       }
       return `
-        <tr data-id="${tr.id}">
+        <tr data-id="${esc(tr.id)}">
           <td>${fmtDate(tr.date)}</td>
-          <td><strong>${tr.symbol}</strong></td>
+          <td><strong>${esc(tr.symbol)}</strong></td>
           <td><span class="badge badge-${tr.direction}">${tr.direction === 'long' ? 'Long' : 'Short'}</span></td>
-          <td>${tr.quantity}</td>
-          <td>${tr.entryPrice}</td>
-          <td>${tr.exitPrice ?? '–'}</td>
-          <td>${tr.leverage ? `<span class="badge badge-tag">${tr.leverage}x</span>` : '–'}</td>
+          <td>${esc(tr.quantity)}</td>
+          <td>${esc(tr.entryPrice)}</td>
+          <td>${esc(tr.exitPrice ?? '–')}</td>
+          <td>${tr.leverage ? `<span class="badge badge-tag">${esc(tr.leverage)}x</span>` : '–'}</td>
           <td>${liqCell}</td>
           <td>${tr.fees ? fmtMoney(tr.fees) : '–'}</td>
           <td>${tr.status === 'open' ? `<span class="badge badge-open">${t('status.open')}</span>` : (pnl != null ? `<span class="${signClass(pnl)}">${fmtMoney(pnl)}</span>` : '–')}</td>
           <td title="${t('col.priceMoveTitle')}">${pct != null ? `<span class="${signClass(pct)}">${fmtPct(pct)}</span>` : '–'}</td>
           <td title="${t('col.returnOnMarginTitle')}">${romPct != null ? `<span class="${signClass(romPct)}">${fmtPct(romPct)}</span>` : '–'}</td>
-          <td>${(tr.tags || []).map(tag => `<span class="badge badge-tag">${tag}</span>`).join('')}</td>
+          <td>${(tr.tags || []).map(tag => `<span class="badge badge-tag">${esc(tag)}</span>`).join('')}</td>
           <td>
             <div class="row-actions">
               <button class="icon-btn btn-edit" title="${t('action.edit')}">${icon('edit', 'icon-xs')}</button>
@@ -856,20 +895,20 @@ const App = (() => {
     const liqHtml = liq != null
       ? `<span class="${unsafeStop ? 'neg' : (Stats.isHighLeverage(tr) ? 'warn' : '')}">${unsafeStop ? icon('warning', 'icon-xs') : ''}${t('trades.liqShort')} ${fmtPrice(liq)}</span>`
       : '';
-    const tags = (tr.tags || []).map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
+    const tags = (tr.tags || []).map(tag => `<span class="badge badge-tag">${esc(tag)}</span>`).join('');
     return `
-      <div class="trade-card" data-id="${tr.id}" role="button" tabindex="0">
+      <div class="trade-card" data-id="${esc(tr.id)}" role="button" tabindex="0">
         <div class="tc-top">
           <div class="tc-title">
-            <strong>${tr.symbol}</strong>
+            <strong>${esc(tr.symbol)}</strong>
             <span class="badge badge-${tr.direction}">${tr.direction === 'long' ? 'Long' : 'Short'}</span>
-            ${tr.leverage ? `<span class="badge badge-tag">${tr.leverage}x</span>` : ''}
+            ${tr.leverage ? `<span class="badge badge-tag">${esc(tr.leverage)}x</span>` : ''}
           </div>
           <div class="tc-pnl">${valueHtml}</div>
         </div>
         <div class="tc-meta">
           <span>${fmtDate(tr.exitDate || tr.date)}</span>
-          <span>${tr.quantity} @ ${tr.entryPrice}${tr.exitPrice != null ? ` → ${tr.exitPrice}` : ''}</span>
+          <span>${esc(tr.quantity)} @ ${esc(tr.entryPrice)}${tr.exitPrice != null ? ` → ${esc(tr.exitPrice)}` : ''}</span>
           ${pct != null ? `<span class="${signClass(pct)}">${fmtPct(pct)}</span>` : ''}
           ${liqHtml}
         </div>
@@ -971,9 +1010,9 @@ const App = (() => {
         <select id="stats-preset">
           ${presets.map(p => `<option value="${p.value}" ${statsFilter.preset === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
         </select>
-        <input type="date" id="stats-from" value="${statsFilter.from}">
+        <input type="date" id="stats-from" value="${esc(statsFilter.from)}">
         <span class="page-subtitle" style="margin:0;">${t('stats.to')}</span>
-        <input type="date" id="stats-to" value="${statsFilter.to}">
+        <input type="date" id="stats-to" value="${esc(statsFilter.to)}">
         ${rangeActive ? `<button class="btn btn-ghost btn-sm" id="btn-stats-reset">${t('stats.resetRange')}</button>` : ''}
       </div>
 
@@ -1151,7 +1190,7 @@ const App = (() => {
     return `<div class="list-rows">${groups.map(g => `
       <div class="list-row">
         <div style="min-width:90px;">
-          <div class="list-row-main">${g.key}</div>
+          <div class="list-row-main">${esc(g.key)}</div>
           <div class="list-row-sub">${t('stats.winRateOf', { count: g.count, tradeWord: tradeWord(g.count), winrate: g.winRate.toFixed(0) })}</div>
         </div>
         <div class="bar-track"><div class="bar-fill" style="width:${Math.abs(g.totalPnl) / maxAbs * 100}%; background:${g.totalPnl >= 0 ? 'var(--green)' : 'var(--red)'};"></div></div>
@@ -1205,7 +1244,7 @@ const App = (() => {
         <div class="panel-title" style="margin-bottom:14px;">${t('settings.basicSettings')}</div>
         <div class="field">
           <label>${t('settings.bookName')}</label>
-          <input type="text" id="s-book-name" value="${displayBookName(book.name)}" placeholder="${t('settings.bookNamePlaceholder')}">
+          <input type="text" id="s-book-name" value="${esc(displayBookName(book.name))}" placeholder="${t('settings.bookNamePlaceholder')}">
         </div>
         <div class="field-row">
           <div class="field">
@@ -1229,7 +1268,7 @@ const App = (() => {
       <div class="panel">
         <div class="panel-title" style="margin-bottom:14px;">${t('settings.usedTags')}</div>
         ${uniqueValues('tags').length
-          ? `<div>${uniqueValues('tags').map(tag => `<span class="badge badge-tag" style="margin-bottom:6px;">${tag}</span>`).join('')}</div>`
+          ? `<div>${uniqueValues('tags').map(tag => `<span class="badge badge-tag" style="margin-bottom:6px;">${esc(tag)}</span>`).join('')}</div>`
           : `<p class="page-subtitle" style="margin:0;">${t('settings.noTagsYet')}</p>`}
       </div>
     `;
@@ -1361,7 +1400,7 @@ const App = (() => {
     formTags.forEach((tag, i) => {
       const chip = document.createElement('span');
       chip.className = 'tag-chip';
-      chip.innerHTML = `${tag} <button type="button">${icon('close', 'icon-xs')}</button>`;
+      chip.innerHTML = `${esc(tag)} <button type="button">${icon('close', 'icon-xs')}</button>`;
       chip.querySelector('button').onclick = () => { formTags.splice(i, 1); renderTagChips(); };
       wrap.insertBefore(chip, $('#f-tag-input'));
     });
