@@ -15,6 +15,8 @@ const App = (() => {
   let tradesPageSize = 50;
   let autosaveOk = true;
   let searchDebounceTimer = null;
+  let backend = null; // optional external storage; see "Extension points" near the end of this file
+  const settingsSections = [];
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
@@ -79,10 +81,15 @@ const App = (() => {
 
   function markDirty() {
     dirty = true;
-    const wasOk = autosaveOk;
-    autosaveOk = Storage.cacheLocally(book);
-    if (wasOk && !autosaveOk) {
-      toast(t('app.autosaveFailed'));
+    if (backend) {
+      // The backend owns persistence — deliberately no plaintext copy in localStorage.
+      if (backend.onChange) backend.onChange(book);
+    } else {
+      const wasOk = autosaveOk;
+      autosaveOk = Storage.cacheLocally(book);
+      if (wasOk && !autosaveOk) {
+        toast(t('app.autosaveFailed'));
+      }
     }
     updateFileStatus();
   }
@@ -236,7 +243,7 @@ const App = (() => {
     // cache in sync with whichever file/handle is currently active, so a
     // reload right after opening a file (before any edit) can't resume into
     // a stale cache from a previously opened book.
-    autosaveOk = Storage.cacheLocally(book);
+    autosaveOk = backend ? true : Storage.cacheLocally(book);
     $('#onboarding').style.display = 'none';
     $('#app').style.display = 'flex';
     updateBookNameDisplay();
@@ -263,6 +270,17 @@ const App = (() => {
   }
 
   async function saveBook(forcePicker = false) {
+    if (backend) {
+      try {
+        await backend.save(book);
+        dirty = false;
+        updateFileStatus(true);
+        toast(t('toast.bookSaved'));
+      } catch (e) {
+        toast(t('toast.saveFailed'));
+      }
+      return;
+    }
     try {
       // Without the File System Access API, saving goes through the share
       // sheet, which must start inside the tap's user-activation window —
@@ -1163,7 +1181,7 @@ const App = (() => {
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="settings-file-panel">
         <div class="panel-title" style="margin-bottom:14px;">${t('settings.file')}</div>
         <div class="list-rows">
           <div class="list-row">
@@ -1218,6 +1236,7 @@ const App = (() => {
 
     updateLangSwitchUI();
     bindLangSwitches();
+    settingsSections.forEach(fn => fn(el, book));
     $('#btn-save-as').onclick = () => saveBook(true);
     $('#btn-open-other').onclick = async () => {
       if (dirty && !confirm(t('settings.confirmOpenOther'))) return;
@@ -1456,7 +1475,42 @@ const App = (() => {
     });
   }
 
-  return { init };
+  // ---------- Extension points ----------
+  // Small, generic hooks so additional storage locations can be plugged in without touching
+  // the core app. A backend is { save(book): Promise, onChange?(book) }. While one is
+  // attached, "Save" calls backend.save(), edits call backend.onChange(), and no plaintext
+  // autosave copy is written to localStorage. Everything else works exactly as before.
+  function attachBackend(b) {
+    backend = b;
+    Storage.clearHandle();
+    document.body.classList.add('has-backend');
+  }
+
+  function detachBackend() {
+    backend = null;
+    document.body.classList.remove('has-backend');
+  }
+
+  function markSaved() {
+    dirty = false;
+    updateFileStatus(true);
+  }
+
+  return {
+    init,
+    loadBook: (data, opts = {}) => loadBook(data, !!opts.unsaved, opts.fileName || null),
+    getBook: () => book,
+    isDirty: () => dirty,
+    refresh: () => { if (book) switchView(currentView); },
+    attachBackend,
+    detachBackend,
+    markSaved,
+    registerSettingsSection: (fn) => { settingsSections.push(fn); },
+    toast,
+    showLoading,
+    hideLoading,
+    nextPaint,
+  };
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);

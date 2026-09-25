@@ -521,5 +521,10 @@ const I18n = (() => {
   // the UI language so switching also switches "1.234,56" vs "1,234.56" etc.
   function locale() { return lang === 'en' ? 'en-US' : 'de-DE'; }
 
-  return { t, getLang, setLang, locale };
+  // Lets additional scripts add their own strings, e.g. extend({ de: {...}, en: {...} }).
+  function extend(dict) {
+    for (const l of Object.keys(dict)) Object.assign(STRINGS[l] || (STRINGS[l] = {}), dict[l]);
+  }
+
+  return { t, getLang, setLang, locale, extend };
 })();
