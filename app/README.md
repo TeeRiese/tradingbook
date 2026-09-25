@@ -25,6 +25,10 @@ Alle Trades liegen in einer JSON-Datei (Struktur siehe `data/beispiel.json`). Di
 
 Beim Öffnen, Anlegen oder Speichern einer größeren Datei (mehrere Tausend Trades) zeigt die App einen Lade-Overlay mit Spinner, solange die Datei verarbeitet wird – das Einlesen und Aufbereiten großer JSON-Dateien blockiert kurz die Seite, damit ist aber sichtbar, dass etwas passiert, statt dass die App scheinbar eingefroren wirkt.
 
+### Import und Sicherheit
+
+Dateien werden vor der Verwendung geprüft: Werte, die nicht zum erwarteten Typ passen (z. B. Text statt Zahl, ungültige Währungscodes, defekte Einträge), werden bereinigt oder verworfen, und alle Inhalte aus einer Datei (Symbole, Tags, Namen) werden beim Anzeigen maskiert. Eine fremde JSON-Datei kann deshalb keinen Code in der App ausführen. Trotzdem gilt: Öffne nur Dateien aus vertrauenswürdiger Quelle.
+
 ## Buchname
 
 Jedes Trading Book hat einen **Namen** (änderbar in den Einstellungen), der in der Sidebar unter dem Logo und im Browser-Tab-Titel angezeigt wird. Nützlich, wenn mehrere Bücher parallel offen sind (z.B. Live-Konto, Demo, Krypto) – so ist immer auf einen Blick klar, welches gerade geöffnet ist. Beim Öffnen einer alten Datei ohne gespeicherten Namen wird der Dateiname als Vorschlag übernommen. Beim Speichern wird der Buchname auch als vorgeschlagener Dateiname verwendet.
