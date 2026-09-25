@@ -1501,6 +1501,7 @@ const App = (() => {
     loadBook: (data, opts = {}) => loadBook(data, !!opts.unsaved, opts.fileName || null),
     getBook: () => book,
     isDirty: () => dirty,
+    markDirty,
     refresh: () => { if (book) switchView(currentView); },
     attachBackend,
     detachBackend,
